@@ -9,6 +9,8 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.VictorSP;
+import edu.wpi.first.cameraserver.CameraServer;
+
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -36,8 +38,8 @@ public class Robot extends TimedRobot
  */
   public void DriveAll(double x, double y) 
   {
-    m_robotDrive.arcadeDrive(m_stick.getY(), m_stick.getX());
-    m_robotDrive2.arcadeDrive(m_stick.getY(), m_stick.getX());
+    m_robotDrive.arcadeDrive(m_stick.getY(), -0.575 * m_stick.getX());
+    m_robotDrive2.arcadeDrive(m_stick.getY(), -0.575 * m_stick.getX());
   }
 
   /**
@@ -64,8 +66,9 @@ public class Robot extends TimedRobot
   @Override
   public void robotInit() 
   {
-    m_rightDrive.setInverted(true);
-    m_rightDrive2.setInverted(true);
+    CameraServer.startAutomaticCapture();
+    m_leftDrive.setInverted(true);
+    m_leftDrive2.setInverted(true);
 
     // !!!
     // CHANGE THIS BEFORE COMPETITION
