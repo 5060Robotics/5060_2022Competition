@@ -90,15 +90,16 @@ public class Robot extends TimedRobot
     // Drive for 2 seconds
     if (m_timer.get() < 2.0)
     {
-      m_leftDrive.set(0.5);
-      m_leftDrive2.set(0.5);
-      m_rightDrive2.set(0.5);
-      m_rightDrive.set(0.5);
+      m_leftDrive.set(-0.5);
+      m_leftDrive2.set(-0.5);
+      m_rightDrive2.set(-0.5);
+      m_rightDrive.set(-0.5);
     }
     else
     {
       m_robotDrive.stopMotor();
     }
+
   }
 
   /** This function is called once each time the robot enters teleoperated mode. */
@@ -107,21 +108,22 @@ public class Robot extends TimedRobot
 
   /** This function is called periodically during teleoperated mode. */
   @Override
+  //m_stick.getRawButton(7) == true
   public void teleopPeriodic() 
   {
-    if (m_stick.getRawButton(7) == true) 
+    if (true) 
     {
      // m_robotDrive.arcadeDrive(m_stick.getY(), m_stick.getX());
      // m_robotDrive2.arcadeDrive(m_stick.getY(), m_stick.getX()); 
      //Replaced by a better function
      DriveAll(m_stick.getY(), m_stick.getX());
     } 
-    else 
-    {
+    //else 
+    //{
     //  m_robotDrive.arcadeDrive((m_stick.getY() * -1), (m_stick.getX()* -1));
     //  m_robotDrive2.arcadeDrive((m_stick.getY() * -1), (m_stick.getX()* -1));
-    DriveAll(-1 * m_stick.getY(), -1 * m_stick.getX());
-    }
+    // DriveAll(-1 * m_stick.getY(), -1 * m_stick.getX());
+    //}
   }
 
   /** This function is called once each time the robot enters test mode. */
