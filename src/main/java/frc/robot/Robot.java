@@ -9,6 +9,8 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.VictorSP;
+
+
 import edu.wpi.first.cameraserver.CameraServer;
 
 
@@ -20,14 +22,23 @@ import edu.wpi.first.cameraserver.CameraServer;
  */
 public class Robot extends TimedRobot 
 {
+
   private final VictorSP m_leftDrive = new VictorSP(7); //front
   private final VictorSP m_leftDrive2 = new VictorSP(6);
   private final VictorSP m_rightDrive = new VictorSP(9); //front
   private final VictorSP m_rightDrive2 = new VictorSP(8);
+  private final VictorSP m_sushi = new VictorSP(5);
+
   private final DifferentialDrive m_robotDrive = new DifferentialDrive(m_leftDrive, m_rightDrive);
   private final DifferentialDrive m_robotDrive2 = new DifferentialDrive(m_leftDrive2, m_rightDrive2);
   private final Joystick m_stick = new Joystick(0);
   private final Timer m_timer = new Timer();
+
+
+  // this is for all the magic numbers and variables and stuff
+  private boolean sushitoggle = false;
+  private double turnMultiplier = 0.575;
+  
 
   /**
  * Effectively only a solution so that we don't have to retype the same two lines of code.
@@ -38,8 +49,8 @@ public class Robot extends TimedRobot
  */
   public void DriveAll(double x, double y) 
   {
-    m_robotDrive.arcadeDrive(m_stick.getY(), -0.575 * m_stick.getX());
-    m_robotDrive2.arcadeDrive(m_stick.getY(), -0.575 * m_stick.getX());
+    m_robotDrive.arcadeDrive(m_stick.getY(), -turnMultiplier * m_stick.getX());
+    m_robotDrive2.arcadeDrive(m_stick.getY(), -turnMultiplier * m_stick.getX());
   }
 
   /**
@@ -102,28 +113,32 @@ public class Robot extends TimedRobot
 
   }
 
+  
   /** This function is called once each time the robot enters teleoperated mode. */
   @Override
-  public void teleopInit() {}
+  public void teleopInit() {
+    sushitoggle = false;
+  }
 
   /** This function is called periodically during teleoperated mode. */
   @Override
   //m_stick.getRawButton(7) == true
   public void teleopPeriodic() 
   {
-    if (true) 
+    if (m_stick.getRawButtonReleased(7))
     {
-     // m_robotDrive.arcadeDrive(m_stick.getY(), m_stick.getX());
-     // m_robotDrive2.arcadeDrive(m_stick.getY(), m_stick.getX()); 
-     //Replaced by a better function
-     DriveAll(m_stick.getY(), m_stick.getX());
-    } 
-    //else 
-    //{
-    //  m_robotDrive.arcadeDrive((m_stick.getY() * -1), (m_stick.getX()* -1));
-    //  m_robotDrive2.arcadeDrive((m_stick.getY() * -1), (m_stick.getX()* -1));
-    // DriveAll(-1 * m_stick.getY(), -1 * m_stick.getX());
-    //}
+      if (sushitoggle == false)
+      {
+        m_sushi.set(1);
+        sushitoggle = true;
+      }
+      else
+      {
+        m_sushi.set(0);
+        sushitoggle = false;
+      }
+    }
+    DriveAll(m_stick.getY(), m_stick.getX());
   }
 
   /** This function is called once each time the robot enters test mode. */
@@ -164,7 +179,6 @@ public class Robot extends TimedRobot
     888  Y88..88P      Y88b 888 Y88..88P 
     888   "Y88P"        "Y88888  "Y88P"  
                
-* Make sure that the motors work on the robot using DriveAll()
 * Add more functionality to DriveAll() (perhaps a built in inverter?)
 * Add more features to the robot that are actually useful 
 * Make sure the custom wait() thing I made never errors in init functions
