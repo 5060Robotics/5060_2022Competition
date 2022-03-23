@@ -9,8 +9,6 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.VictorSP;
-
-
 import edu.wpi.first.cameraserver.CameraServer;
 
 
@@ -23,11 +21,13 @@ import edu.wpi.first.cameraserver.CameraServer;
 public class Robot extends TimedRobot 
 {
 
-  private final VictorSP m_leftDrive = new VictorSP(7); //front
-  private final VictorSP m_leftDrive2 = new VictorSP(6);
-  private final VictorSP m_rightDrive = new VictorSP(9); //front
-  private final VictorSP m_rightDrive2 = new VictorSP(8);
-  private final VictorSP m_sushi = new VictorSP(5);
+  private final VictorSP m_leftDrive = new VictorSP(7); // front
+  private final VictorSP m_leftDrive2 = new VictorSP(6); // rear
+  private final VictorSP m_rightDrive = new VictorSP(1); // front 9
+  private final VictorSP m_rightDrive2 = new VictorSP(2); // rear 8
+
+  private final VictorSP m_sushi = new VictorSP(8); // UNBIND THIS
+  private final VictorSP m_elevator = new VictorSP(3);
 
   private final DifferentialDrive m_robotDrive = new DifferentialDrive(m_leftDrive, m_rightDrive);
   private final DifferentialDrive m_robotDrive2 = new DifferentialDrive(m_leftDrive2, m_rightDrive2);
@@ -37,6 +37,8 @@ public class Robot extends TimedRobot
 
   // this is for all the magic numbers and variables and stuff
   private boolean sushitoggle = false;
+  private double sushispeed = 0.5;
+  private double sushispeedModifier = 0.1;
   private double turnMultiplier = 0.575;
   
 
@@ -123,13 +125,40 @@ public class Robot extends TimedRobot
   /** This function is called periodically during teleoperated mode. */
   @Override
   //m_stick.getRawButton(7) == true
-  public void teleopPeriodic() 
+ /*public void teleopPeriodic() 
   {
-    if (m_stick.getRawButtonReleased(7))
+    if (m_stick.getRawButtonPressed(7) ^ m_stick.getRawButtonPressed(5))
     {
       if (sushitoggle == false)
       {
-        m_sushi.set(1);
+        if (m_stick.getRawButtonReleased(7))
+        {
+          m_sushi.set(1);
+          sushitoggle = true;
+        }
+        if (m_stick.getRawButtonReleased(5))
+        {
+          m_sushi.set(0.5);
+          sushitoggle = true;
+        }
+      }
+      else
+      {
+        m_sushi.set(0);
+        sushitoggle = false;
+      }
+    }
+
+    DriveAll(m_stick.getY(), m_stick.getX());
+  }*/
+  public void teleopPeriodic() 
+  {
+    if (m_stick.getRawButtonPressed(7))
+    {
+      if (sushitoggle == false)
+      {
+        sushispeed = 0.5;
+        m_sushi.set(sushispeed);
         sushitoggle = true;
       }
       else
@@ -138,9 +167,36 @@ public class Robot extends TimedRobot
         sushitoggle = false;
       }
     }
+    if (m_stick.getPOV() != -1 && sushitoggle == true)
+    {
+      if (m_stick.getPOV() == 0 && sushispeed < 1)
+      {
+        if (sushispeed + sushispeedModifier == 0)
+        {
+          sushispeed += (sushispeedModifier * 2);
+        }
+        else
+        {
+        sushispeed += sushispeedModifier;
+        }
+        m_sushi.set(sushispeed);
+      }
+      if (m_stick.getPOV() == 180 && sushispeed > -1)
+      {
+        if (sushispeed - sushispeedModifier == 0)
+        {
+          sushispeed -= (sushispeedModifier * 2);
+        }
+        else
+        {
+        sushispeed -= sushispeedModifier;
+        }
+        m_sushi.set(sushispeed);
+      }
+    } 
+    //System.out.print(Double.toString(sushispeed) + ", " + Double.toString(sushispeedModifier));
     DriveAll(m_stick.getY(), m_stick.getX());
   }
-
   /** This function is called once each time the robot enters test mode. */
   @Override
   public void testInit()
