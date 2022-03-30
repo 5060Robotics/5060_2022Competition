@@ -23,11 +23,11 @@ public class Robot extends TimedRobot
 
   private final VictorSP m_leftDrive = new VictorSP(7); // front
   private final VictorSP m_leftDrive2 = new VictorSP(6); // rear
-  private final VictorSP m_rightDrive = new VictorSP(1); // front 9
-  private final VictorSP m_rightDrive2 = new VictorSP(2); // rear 8
+  private final VictorSP m_rightDrive = new VictorSP(9); // front 9
+  private final VictorSP m_rightDrive2 = new VictorSP(8); // rear 8
 
-  private final VictorSP m_sushi = new VictorSP(8); // UNBIND THIS
-  private final VictorSP m_elevator = new VictorSP(3);
+  private final VictorSP m_sushi = new VictorSP(5); // UNBIND THIS
+  private final VictorSP m_elevator = new VictorSP(3); // BIND THIS
 
   private final DifferentialDrive m_robotDrive = new DifferentialDrive(m_leftDrive, m_rightDrive);
   private final DifferentialDrive m_robotDrive2 = new DifferentialDrive(m_leftDrive2, m_rightDrive2);
@@ -36,25 +36,46 @@ public class Robot extends TimedRobot
 
 
   // this is for all the magic numbers and variables and stuff
-  private boolean sushitoggle = false;
-  private double sushispeed = 0.5;
-  private double sushispeedModifier = 0.1;
   private double turnMultiplier = 0.575;
-  
+  private double sushidrive (double speed)
+  {
+    double newSpeed = speed;
+    if (newSpeed > -1 && newSpeed < 1)
+    {
+      if (m_stick.getPOV() == 0)
+      {
+        newSpeed = 1;
+      }
+      if (m_stick.getPOV() == 180)
+      {
+        newSpeed = -1;
+      }
+    }
+    return newSpeed;
+  }
 
   /**
  * Effectively only a solution so that we don't have to retype the same two lines of code.
- * Takes the same first two values as arcadeDrive().
- * <p>Might add more functionality later idk lol.
- * @param x The same as arcadeDrive().
- * @param y The same as arcadeDrive().
+ * No params because it reads directly from joystick.
  */
-  public void DriveAll(double x, double y) 
+  public void DriveAll() 
   {
     m_robotDrive.arcadeDrive(m_stick.getY(), -turnMultiplier * m_stick.getX());
     m_robotDrive2.arcadeDrive(m_stick.getY(), -turnMultiplier * m_stick.getX());
   }
 
+ /**
+ * Autonomous DriveAll() function that doesn't rely on joystick values.
+ * Takes the same first two values as arcadeDrive().
+ * @param x The same as arcadeDrive().
+ * @param y The same as arcadeDrive().
+ */
+  public void DriveAllAutonomous(double x, double y)
+  {
+    m_robotDrive.arcadeDrive(x, -turnMultiplier * y);
+    m_robotDrive2.arcadeDrive(x, -turnMultiplier * y);
+  }
+  
   /**
    * Wait for a specified amount of milliseconds. Might cause unforeseen errors, so ONLY USE IN TEST MODE. 
    * Also probably not a good idea to use it in periodic mode for anything.
@@ -82,6 +103,7 @@ public class Robot extends TimedRobot
     CameraServer.startAutomaticCapture();
     m_leftDrive.setInverted(true);
     m_leftDrive2.setInverted(true);
+    m_sushi.setInverted(true);
 
     // !!!
     // CHANGE THIS BEFORE COMPETITION
@@ -103,14 +125,11 @@ public class Robot extends TimedRobot
     // Drive for 2 seconds
     if (m_timer.get() < 2.0)
     {
-      m_leftDrive.set(-0.5);
-      m_leftDrive2.set(-0.5);
-      m_rightDrive2.set(-0.5);
-      m_rightDrive.set(-0.5);
+      DriveAllAutonomous(-0.5, -0.5);
     }
     else
     {
-      m_robotDrive.stopMotor();
+      DriveAllAutonomous(0, 0);
     }
 
   }
@@ -119,83 +138,21 @@ public class Robot extends TimedRobot
   /** This function is called once each time the robot enters teleoperated mode. */
   @Override
   public void teleopInit() {
-    sushitoggle = false;
   }
 
   /** This function is called periodically during teleoperated mode. */
   @Override
-  //m_stick.getRawButton(7) == true
- /*public void teleopPeriodic() 
-  {
-    if (m_stick.getRawButtonPressed(7) ^ m_stick.getRawButtonPressed(5))
-    {
-      if (sushitoggle == false)
-      {
-        if (m_stick.getRawButtonReleased(7))
-        {
-          m_sushi.set(1);
-          sushitoggle = true;
-        }
-        if (m_stick.getRawButtonReleased(5))
-        {
-          m_sushi.set(0.5);
-          sushitoggle = true;
-        }
-      }
-      else
-      {
-        m_sushi.set(0);
-        sushitoggle = false;
-      }
-    }
-
-    DriveAll(m_stick.getY(), m_stick.getX());
-  }*/
   public void teleopPeriodic() 
   {
-    if (m_stick.getRawButtonPressed(7))
+    if (m_stick.getRawButton(7))
     {
-      if (sushitoggle == false)
-      {
-        sushispeed = 0.5;
-        m_sushi.set(sushispeed);
-        sushitoggle = true;
-      }
-      else
-      {
-        m_sushi.set(0);
-        sushitoggle = false;
-      }
+      m_sushi.set(sushidrive(0.5));
     }
-    if (m_stick.getPOV() != -1 && sushitoggle == true)
+    else
     {
-      if (m_stick.getPOV() == 0 && sushispeed < 1)
-      {
-        if (sushispeed + sushispeedModifier == 0)
-        {
-          sushispeed += (sushispeedModifier * 2);
-        }
-        else
-        {
-        sushispeed += sushispeedModifier;
-        }
-        m_sushi.set(sushispeed);
-      }
-      if (m_stick.getPOV() == 180 && sushispeed > -1)
-      {
-        if (sushispeed - sushispeedModifier == 0)
-        {
-          sushispeed -= (sushispeedModifier * 2);
-        }
-        else
-        {
-        sushispeed -= sushispeedModifier;
-        }
-        m_sushi.set(sushispeed);
-      }
-    } 
-    //System.out.print(Double.toString(sushispeed) + ", " + Double.toString(sushispeedModifier));
-    DriveAll(m_stick.getY(), m_stick.getX());
+      m_sushi.set(0);
+    }
+    DriveAll();
   }
   /** This function is called once each time the robot enters test mode. */
   @Override
@@ -213,6 +170,9 @@ public class Robot extends TimedRobot
     m_rightDrive2.set(0.5);
     wait(1000);
     m_rightDrive2.stopMotor();
+    m_sushi.set(0.5);
+    wait(1000);
+    m_sushi.stopMotor();
   }
   
 
